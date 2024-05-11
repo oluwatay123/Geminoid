@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
 const App = () => {
   const [error, setError] = useState(null)
   const [value, setValue] = useState("")
@@ -14,7 +13,6 @@ const App = () => {
   const clear = () => {
     setError(null)
     setValue('')
-    setChatHistory([])
   }
 
 
@@ -112,7 +110,7 @@ const App = () => {
         }]
       )
 
-
+      setValue('')
       setLoading(false)
     } catch (error) {
       setLoading(false)
@@ -165,12 +163,10 @@ const App = () => {
 
           {loading && (
             <div className='Answer'>
-              <div className="d-flex justify-content-center">
-                <div className="spinner-border" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
+              <div class="spinner"></div>
+
               </div>
-            </div>
+          
           )}
 
         </div>

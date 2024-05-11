@@ -1,5 +1,6 @@
 * {
   font-family: sans-serif;
+  border: none !important;
 }
 
 .app {
@@ -8,7 +9,6 @@
   align-items: center;
   justify-content: center;
   margin: 100px;
-  border:none;
 }
 
 p {
@@ -88,3 +88,25 @@ p {
   padding: 20px 10px;
 }
 
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  animation: spin 1s linear infinite; /* Apply animation */
+  
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg); /* Starting point */
+  }
+  100% {
+    transform: rotate(360deg); /* End point */
+  }
+}
