@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 const App = () => {
@@ -6,21 +6,19 @@ const App = () => {
   const [value, setValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
-  const chatContainerRef = useRef(null);
+  const chatEndRef = useRef(null);
 
   const Timeout = 120;
   let data;
 
-  // Function to clear the input field
   const clear = () => {
     setError(null);
     setValue('');
-  };
+  }
 
-  // Options to select randomly from
-  const selectRandomOptions = [
+  const selectRandomOPtions = [
     "How were you made?",
-    "How do I make a pizza?",
+    "How do i make a pizza ?",
     "What time is it today?",
     "What is the best coding language?",
     "What's your favorite hobby or pastime?",
@@ -33,14 +31,13 @@ const App = () => {
     "What's your favorite way to relax after a long day?",
     "What's the best piece of advice you've ever received?",
     "If you could switch lives with any fictional character for a day, who would it be and what would you do?"
-  ];
+  ]
 
   const selectRandomly = () => {
-    const randomValue = selectRandomOptions[Math.floor(Math.random() * selectRandomOptions.length)];
+    const randomValue = selectRandomOPtions[Math.floor(Math.random() * selectRandomOPtions.length)];
     setValue(randomValue);
-  };
+  }
 
-  // Function to fetch data from the gemini server
   const fetchData = async () => {
     const options = {
       method: 'POST',
@@ -56,7 +53,7 @@ const App = () => {
     const response = await fetch("https://gemini-server-1kvg.onrender.com/gemini/send-response", options);
     const result = await response.text();
     return result;
-  };
+  }
 
   const fetchDataAndHandleTimeout = async () => {
     try {
@@ -69,9 +66,8 @@ const App = () => {
       setError("Timeout, please check your internet connection");
       setLoading(false);
     }
-  };
+  }
 
-  // Function to send query to the server
   const getResponse = async () => {
     if (!value) {
       setError("Error: please enter a value");
@@ -79,49 +75,37 @@ const App = () => {
     }
 
     try {
-      // Loading while awaiting response
       setLoading(true);
-      // Receive messages from the server
       data = await fetchDataAndHandleTimeout();
-
-      // Format bot response if needed (adjust this according to your response format)
       const formattedRes = data.split('\\n').map((part, index) => <p key={index}>{part}</p>);
 
       setChatHistory(oldChatHistory => [
         ...oldChatHistory,
-        {
-          role: "user",
-          parts: value
-        },
-        {
-          role: "Queen",
-          parts: formattedRes
-        }
+        { role: "user", parts: value },
+        { role: "Geminoid", parts: formattedRes }
       ]);
 
       setValue('');
       setLoading(false);
-      scrollToBottom(); // Scroll to bottom after response
+      scrollToBottom();
     } catch (error) {
       setLoading(false);
-      setError("Something went wrong");
+      setError("something went wrong");
     }
-  };
+  }
 
   const listenEnter = (e) => {
     if (e.key === "Enter") {
       getResponse();
     }
-  };
+  }
 
   const scrollToBottom = () => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }
 
   useEffect(() => {
-    scrollToBottom(); // Scroll to bottom when chat history updates
+    scrollToBottom();
   }, [chatHistory]);
 
   return (
@@ -129,35 +113,39 @@ const App = () => {
       <h1 className='app-title'>Geminiod</h1>
       <section className='app'>
         <p>
-          What do you want to know?
-          <button className='suprise-me' onClick={selectRandomly} disabled={!chatHistory || loading}>Surprise me</button>
+          what do you want to know?
+          <button className='suprise-me' onClick={selectRandomly} disabled={!chatHistory || loading}>suprise me</button>
         </p>
 
         <div className='search-container'>
-          <input value={value} placeholder='What is todays weather?' onKeyDown={listenEnter} onChange={e => setValue(e.target.value)} />
+          <input value={value} placeholder='What is todays weather?' onKeyDown={listenEnter} onChange={e => setValue(e.target.value)}></input>
           {!error && <button className='search-button' onClick={getResponse}>Search</button>}
-          {error && <button className='search-button' onClick={clear}>Clear</button>}
+          {error && <button className='search-button' onClick={clear}>clear</button>}
         </div>
         <p>{error}</p>
 
         <div className='search-result'>
-          {chatHistory.map((chatItem, _index) => (
-            <div className='Answer' key={_index}>
-              <p>
-                {chatItem.role} : {chatItem.parts}
-              </p>
-            </div>
-          ))}
+          {
+            chatHistory.map((chatItem, _index) => (
+              <div className='Answer' key={_index}>
+                <p>
+                  {chatItem.role} : {chatItem.parts}
+                </p>
+              </div>
+            ))
+          }
+
           {loading && (
             <div className='Answer'>
               <div className="spinner"></div>
             </div>
           )}
+
+          <div ref={chatEndRef}></div>
         </div>
-        <div ref={chatContainerRef}></div>
       </section>
     </div>
   );
-};
+}
 
 export default App;
