@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+
 const App = () => {
-  const [error, setError] = useState(null)
-  const [value, setValue] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null);
+  const [value, setValue] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]);
+  const chatContainerRef = useRef(null);
 
-  const Timeout = 120
-  const [chatHistory, setChatHistory] = useState([])
-
+  const Timeout = 120;
   let data;
-  //to clear the input field
+
+  // Function to clear the input field
   const clear = () => {
-    setError(null)
-    setValue('')
-  }
+    setError(null);
+    setValue('');
+  };
 
-
-
-  //options to select randomly from 
-  const selectRandomOPtions = [
-    "How were  you made?",
-    "How do i make a pizza ?",
+  // Options to select randomly from
+  const selectRandomOptions = [
+    "How were you made?",
+    "How do I make a pizza?",
     "What time is it today?",
     "What is the best coding language?",
     "What's your favorite hobby or pastime?",
@@ -33,15 +33,14 @@ const App = () => {
     "What's your favorite way to relax after a long day?",
     "What's the best piece of advice you've ever received?",
     "If you could switch lives with any fictional character for a day, who would it be and what would you do?"
-  ]
-
+  ];
 
   const selectRandomly = () => {
-    const randomValue = selectRandomOPtions[Math.floor(Math.random() * selectRandomOPtions.length)]
-    setValue(randomValue)
-  }
+    const randomValue = selectRandomOptions[Math.floor(Math.random() * selectRandomOptions.length)];
+    setValue(randomValue);
+  };
 
-  // to fetch the data from the gemini server
+  // Function to fetch data from the gemini server
   const fetchData = async () => {
     const options = {
       method: 'POST',
@@ -52,15 +51,12 @@ const App = () => {
         history: chatHistory,
         message: value
       })
-    }
+    };
 
-    const response = await fetch("https://gemini-server-1kvg.onrender.com/gemini/send-response", options)
-    const result = await response.text()
-    return result
-
-  }
-
-
+    const response = await fetch("https://gemini-server-1kvg.onrender.com/gemini/send-response", options);
+    const result = await response.text();
+    return result;
+  };
 
   const fetchDataAndHandleTimeout = async () => {
     try {
@@ -73,108 +69,95 @@ const App = () => {
       setError("Timeout, please check your internet connection");
       setLoading(false);
     }
-  }
+  };
 
-
-
-
-
-  // use to send our query to the server`
+  // Function to send query to the server
   const getResponse = async () => {
     if (!value) {
-      setError(" Error: please enter a value")
-      return
+      setError("Error: please enter a value");
+      return;
     }
 
     try {
-
-
-
-      //loading while awaiting response 
-      setLoading(true)
-      // its use to recieve messages from the server
+      // Loading while awaiting response
+      setLoading(true);
+      // Receive messages from the server
       data = await fetchDataAndHandleTimeout();
-
 
       // Format bot response if needed (adjust this according to your response format)
       const formattedRes = data.split('\\n').map((part, index) => <p key={index}>{part}</p>);
 
-      setChatHistory(oldChatHsitory =>
-        [...oldChatHsitory, {
+      setChatHistory(oldChatHistory => [
+        ...oldChatHistory,
+        {
           role: "user",
           parts: value
         },
         {
-          role: "Geminoid",
+          role: "Queen",
           parts: formattedRes
-        }]
-      )
+        }
+      ]);
 
-      setValue('')
-      setLoading(false)
+      setValue('');
+      setLoading(false);
+      scrollToBottom(); // Scroll to bottom after response
     } catch (error) {
-      setLoading(false)
-      setError("something went wrong")
-
+      setLoading(false);
+      setError("Something went wrong");
     }
-  }
-
-
+  };
 
   const listenEnter = (e) => {
     if (e.key === "Enter") {
-      getResponse()
+      getResponse();
     }
-  }
+  };
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom(); // Scroll to bottom when chat history updates
+  }, [chatHistory]);
 
   return (
     <div className="app">
       <h1 className='app-title'>Geminiod</h1>
       <section className='app'>
         <p>
-          what do you want to know?
-          <button className='suprise-me' onClick={selectRandomly} disabled={!chatHistory || loading}> suprise me </button>
+          What do you want to know?
+          <button className='suprise-me' onClick={selectRandomly} disabled={!chatHistory || loading}>Surprise me</button>
         </p>
 
-
-
         <div className='search-container'>
-          <input value={value} placeholder='What is todays weather?' onKeyDown={listenEnter} onChange={e => setValue(e.target.value)}></input>
+          <input value={value} placeholder='What is todays weather?' onKeyDown={listenEnter} onChange={e => setValue(e.target.value)} />
           {!error && <button className='search-button' onClick={getResponse}>Search</button>}
-          {error && <button className='search-button' onClick={clear}>clear</button>
-          }
-
+          {error && <button className='search-button' onClick={clear}>Clear</button>}
         </div>
         <p>{error}</p>
 
         <div className='search-result'>
-          {
-            chatHistory.map((chatItem, _index) => {
-              return <div className='Answer' key={_index}>
-                <p>
-                  {chatItem.role} : {chatItem.parts}
-                </p>
-              </div>
-
-            }
-
-            )
-          }
-
+          {chatHistory.map((chatItem, _index) => (
+            <div className='Answer' key={_index}>
+              <p>
+                {chatItem.role} : {chatItem.parts}
+              </p>
+            </div>
+          ))}
           {loading && (
             <div className='Answer'>
-              <div class="spinner"></div>
-
-              </div>
-          
+              <div className="spinner"></div>
+            </div>
           )}
-
         </div>
+        <div ref={chatContainerRef}></div>
       </section>
-
     </div>
   );
-
-}
+};
 
 export default App;
