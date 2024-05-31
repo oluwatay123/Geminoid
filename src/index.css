@@ -1,6 +1,5 @@
 * {
   font-family: sans-serif;
-    background: #343541;
 }
 
 .app {
@@ -9,7 +8,8 @@
   align-items: center;
   justify-content: center;
   margin: 100px;
-  
+      background: #343541;
+
 }
 
 p {
