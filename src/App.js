@@ -54,7 +54,7 @@ const App = () => {
       })
     }
 
-    const response = await fetch("https://localhost:5000/gemini-send-response", options)
+    const response = await fetch("https://gemini-server-1kvg.onrender.com", options)
     const result = await response.text()
     return result
 
